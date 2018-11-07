@@ -2,7 +2,7 @@ package hello
 
 class Greeting {
 
-    val content: String
+    var content: String? = null
 
     constructor() {}
 

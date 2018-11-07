@@ -10,9 +10,8 @@ class GreetingController {
 
     @MessageMapping("/hello")
     @SendTo("/topic/greetings")
-    @Throws(Exception::class)
     fun greeting(message: HelloMessage): Greeting {
-        return Greeting("Hello, " + HtmlUtils.htmlEscape(message.getName()) + "!")
+        return Greeting("Hello, " + HtmlUtils.htmlEscape(message.name) + "!")
     }
 
 }
