@@ -1,8 +1,8 @@
-package hello
+package aslive
 
 class Greeting {
 
-    var content: String? = null
+    var content: String? = ""
 
     constructor() {}
 

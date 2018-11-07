@@ -1,8 +1,8 @@
-package hello
+package aslive
 
 class HelloMessage {
 
-    var name: String? = null
+    var name: String? = ""
 
     constructor() {}
 
