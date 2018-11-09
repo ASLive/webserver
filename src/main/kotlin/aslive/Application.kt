@@ -7,7 +7,7 @@ import org.springframework.boot.runApplication
 @SpringBootApplication
 object Application {
 
-    fun main(args: Array<String>) {
+    platformStatic fun main(args: Array<String>) {
         runApplication<Application>(*args)
     }
 }

@@ -1,6 +1,8 @@
 
 
 buildscript {
+    ext.kotlin_version = '1.2.51'
+
     repositories {
         mavenCentral()
     }
@@ -15,7 +17,8 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 apply plugin: 'application'
-mainClassName = 'main.kotlin.aslive.Application'
+sourceSets.main.kotlin.srcDirs = ['src']
+mainClassName = 'aslive.Application'
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
     kotlinOptions {
@@ -41,7 +44,6 @@ dependencies {
     compile("org.webjars:stomp-websocket:2.3.3")
     compile("org.webjars:bootstrap:3.3.7")
     compile("org.webjars:jquery:3.1.0")
-
     testCompile("org.springframework.boot:spring-boot-starter-test")
 }
 
