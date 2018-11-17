@@ -18,7 +18,7 @@
 
     chatSocket.onmessage = function(e) {
         var data = JSON.parse(e.data);
-        var message = data['message'];
+        var message = data['translation'];
         document.querySelector('#chat-log').value += (message + '\n');
     };
 
@@ -37,7 +37,7 @@
         var messageInputDom = document.querySelector('#chat-message-input');
         var message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
-            'message': message
+            'input': message
         }));
 
         messageInputDom.value = '';
