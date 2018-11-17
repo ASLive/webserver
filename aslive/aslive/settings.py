@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'channels',
-    'asyncio'
+    'asyncio',
 ]
 
 MIDDLEWARE = [
