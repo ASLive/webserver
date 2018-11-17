@@ -1,11 +1,15 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
+import logging
 
 class AslConsumer(WebsocketConsumer):
+
+    data_cache = []
+
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
+        self.room_group_name = 'client_%s' % self.room_name
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
@@ -27,19 +31,24 @@ class AslConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.room_group_name,
-            {
-                'type': 'asl_message',
-                'message': message
-            }
-        )
+        print("(in "+self.room_group_name+") received: "+message)
+        self.data_cache.append(message)
+
+        if len(self.data_cache) > 3:
+            # Send message to room group
+            async_to_sync(self.channel_layer.group_send)(
+                self.room_group_name,
+                {
+                    'type': 'asl_message',
+                    'message': message
+                }
+            )
 
     # Receive message from room group
     def asl_message(self, event):
-        message = event['message']
+        message = event['message'].upper()
 
+        print("(in "+self.room_group_name+") sending: "+message)
         # Send message to WebSocket
         self.send(text_data=json.dumps({
             'message': message
