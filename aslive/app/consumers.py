@@ -34,20 +34,19 @@ class AslConsumer(WebsocketConsumer):
         print("(in "+self.room_group_name+") received: "+message)
         self.data_cache.append(message)
 
-        if len(self.data_cache) > 3:
+        if len(self.data_cache) > 2:
             # Send message to room group
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
                 {
                     'type': 'asl_message',
-                    'message': message
                 }
             )
 
     # Receive message from room group
     def asl_message(self, event):
-        message = event['message'].upper()
-
+        message = "".join([data[0] for data in self.data_cache])
+        self.data_cache = []
         print("(in "+self.room_group_name+") sending: "+message)
         # Send message to WebSocket
         self.send(text_data=json.dumps({
