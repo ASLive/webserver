@@ -5,8 +5,6 @@ from . import translate
 
 class AslConsumer(WebsocketConsumer):
 
-    data_cache = []
-
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'client_%s' % self.room_name
