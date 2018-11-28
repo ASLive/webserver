@@ -1,5 +1,4 @@
 from django.conf.urls import url
+from . import consumers
 
-urlpatterns = [
-    url(r'^(?P<room_name>[^/]+)/$',lambda:None),
-]
+websocket_urlpatterns = [url(r'^$', consumers.AslConsumer),]
