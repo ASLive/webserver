@@ -36,7 +36,11 @@ SECRET_KEY = '^)nsl_#!*qu7)$r7x8@!%syao@rtbf6!^l417qz-fborw*r_dx'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+# ngrok host ip, must be changed when restarting ngrok server
+# needed for hosting to devices over wifi
+ngrok_host = "0f35afae.ngrok.io"
+
+ALLOWED_HOSTS = ["10.0.2.2", ngrok_host]
 
 
 # Application definition

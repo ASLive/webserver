@@ -16,4 +16,11 @@ class AslConsumer(WebsocketConsumer):
         async_to_sync(self.channel_layer.group_discard)(self.client_name,self.channel_name)
 
     def receive(self, text_data):
-        self.translator.process(json.loads(text_data)['input'])
+
+        # write video data to mp4 file
+        f = open('test.mp4','w')
+        f.write(text_data)
+
+        # print data for debugging
+        print("\n\n\n"+text_data+"\n\n\n");
+        #self.translator.process(json.loads(text_data)['input'])
