@@ -3,6 +3,7 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 import uuid
 from . import translate
+import base64
 
 class AslConsumer(WebsocketConsumer):
 
@@ -17,10 +18,14 @@ class AslConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
 
+        # decode video data from base64
+        # remove leading padding header (data:video/mp4;base64,)
+        decoded_string = base64.b64decode(text_data[22:])
+
         # write video data to mp4 file
-        f = open('test.mp4','w')
-        f.write(text_data)
+        f = open('test.mp4','wb')
+        f.write(decoded_string)
 
         # print data for debugging
-        print("\n\n\n"+text_data+"\n\n\n");
+        # print("\n\n\n"+text_data+"\n\n\n");
         #self.translator.process(json.loads(text_data)['input'])
