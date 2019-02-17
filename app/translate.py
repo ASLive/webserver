@@ -16,7 +16,8 @@ class Translator():
         self.detect_asl_letter(video_frames)
 
     def detect_asl_letter(self,video_frames):
-        predictions = model.predict(video_frames)
+        hand = image_to_hand(video_frames[0])
+        predictions = model.predict(hand)
         for eval in predictions:
             predicted_label = np.argmax(eval)
             predicted_letter = classes[predicted_label]
