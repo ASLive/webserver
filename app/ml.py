@@ -64,3 +64,8 @@ def image_to_hand(image):
 
 def read_classes():
     return pickle.load( open(CLASSES_PATH,"rb") )
+
+model = read_model()
+
+def predict(hand):
+    return model.predict(hand)

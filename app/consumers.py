@@ -8,6 +8,37 @@ import base64
 from datetime import datetime
 import cv2
 from contextlib import closing
+import math
+
+# TODO: get frames without saving video file for speed
+def get_frames(video_file):
+    frames = []
+    vidcap = cv2.VideoCapture(video_file)
+    success = True
+    count = 0
+    while success:
+      success, image = vidcap.read()
+      if success:
+          h, w = image.shape[:2]
+          img_c = (w / 2, h / 2)
+
+          rot = cv2.getRotationMatrix2D(img_c, 270, 1)
+
+          rad = math.radians(270)
+          sin = math.sin(rad)
+          cos = math.cos(rad)
+          b_w = int((h * abs(sin)) + (w * abs(cos)))
+          b_h = int((h * abs(cos)) + (w * abs(sin)))
+
+          rot[0, 2] += ((b_w / 2) - img_c[0])
+          rot[1, 2] += ((b_h / 2) - img_c[1])
+
+          image = cv2.warpAffine(image, rot, (b_w, b_h), flags=cv2.INTER_LINEAR)
+          cv2.imwrite("frames/frame_%d.jpg" % count, image)     # save frame as JPEG file
+          frames.append(image)
+      count += 1
+
+    return frames
 
 class AslConsumer(WebsocketConsumer):
 
@@ -44,16 +75,3 @@ class AslConsumer(WebsocketConsumer):
         self.translator.process(video_frames)
 
         print('processed request @ ' + str(datetime.now().time()))
-
-    # TODO: get frames without saving video file for speed
-    def get_frames(video_file):
-        frames = []
-        vidcap = cv2.VideoCapture(video_file)
-        success = True
-        while success:
-          # cv2.imwrite("frames/frame_%d.jpg" % count, image)     # save frame as JPEG file
-          success, image = vidcap.read()
-          if success:
-              frames.append(image)
-
-        return frames
