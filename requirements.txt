@@ -34,7 +34,6 @@ PyHamcrest==1.9.0
 pyparsing==2.3.1
 python-dateutil==2.8.0
 pytz==2018.9
-PyYAML==3.13
 scipy==1.2.1
 six==1.12.0
 tensorboard==1.12.2
