@@ -2,3 +2,6 @@
 .idea/*
 venv/*
 *.sqlite3
+hand3d/weights/*
+hand3d/results/*
+hand3d/data/bin/*
