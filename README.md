@@ -34,7 +34,7 @@ setup:
 - install nodejs
     - `sudo apt-get install nodejs`
     - https://www.taniarascia.com/how-to-install-and-use-node-js-and-npm-mac-and-windows/)
-- copy code above into client.js
+- copy the code above into a new file called client.js
 - `npm install --save ws`
 - make sure the server is running
 - `nodejs client.js` or `node client.js`
