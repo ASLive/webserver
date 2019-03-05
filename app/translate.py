@@ -84,7 +84,7 @@ class Translator():
         # post processing
         keypoint_coord3d_v = np.squeeze(keypoint_coord3d_v)
         hand_vector = np.expand_dims(keypoint_coord3d_v,0)
-        
+
         return hand_vector
 
     def letter_predict(self, hand):
@@ -95,22 +95,22 @@ class Translator():
 
         return ret
 
-    def process(self,video_frames):
+    def process(self,frame):
         """
-        for each video frame:
+        for a given video frame:
             - extract the hand vector data
             - predict the asl letter
         """
-        for frame in video_frames:
-            hand = self.image_to_hand(frame)
-            predictions = self.letter_predict(hand)
-            for eval in predictions:
-                predicted_label = np.argmax(eval)
-                predicted_letter = classes[predicted_label]
-                # TODO: have threshold of confidence
-                # to not spam client every frame
-                print(eval)
-                print(predicted_letter)
-                self.client.send(text_data=json.dumps(
-                    {'translation': predicted_letter}
-                ))
+        hand = self.image_to_hand(frame)
+        prediction = self.letter_predict(hand)[0]
+        predicted_label = np.argmax(prediction)
+        predicted_letter = classes[predicted_label]
+        confidence_threshold = 0.60;
+        prediction_confidence = prediction[predicted_label]
+        # TODO: stop sending if client disconnects
+        print(prediction)
+        print(predicted_letter)
+        if prediction_confidence > confidence_threshold:
+            self.client.send(text_data=json.dumps(
+                {'translation': predicted_letter}
+            ))
