@@ -10,7 +10,7 @@ import cv2
 from contextlib import closing
 import math
 
-TEST_MODE = True; # for use without mobile client
+TEST_MODE = False; # for use without mobile client
 
 # TODO: get frames without saving video file for speed
 def get_frames(video_file):
