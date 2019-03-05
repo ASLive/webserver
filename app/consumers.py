@@ -43,12 +43,14 @@ def get_frames(video_file):
 class AslConsumer(WebsocketConsumer):
 
     def connect(self):
+
         self.client_name = 'client_%s' % uuid.uuid4()
         self.translator = translate.Translator(self)
         async_to_sync(self.channel_layer.group_add)(self.client_name,self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
+        self.translator = None
         async_to_sync(self.channel_layer.group_discard)(self.client_name,self.channel_name)
 
     def receive(self, text_data):
@@ -58,13 +60,13 @@ class AslConsumer(WebsocketConsumer):
         # decode video data from base64
         # remove leading padding header (data:video/mp4;base64,)
         # TODO: find a safer way to strip header
-        decoded_string = base64.b64decode(text_data[22:])
+        # decoded_string = base64.b64decode(text_data[22:])
 
         # write video data to mp4 file
         video_file_path = 'test.mp4'
-        f = open(video_file_path,'wb')
-        f.write(decoded_string)
-        f.close()
+        # f = open(video_file_path,'wb')
+        # f.write(decoded_string)
+        # f.close()
 
         # get video frames
         video_frames = get_frames(video_file_path)

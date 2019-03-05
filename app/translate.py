@@ -2,56 +2,83 @@ from __future__ import print_function, unicode_literals
 import json
 import numpy as np
 
-import tensorflow as tf
 import keras
 from keras.models import model_from_json
 import pickle
 
-#TODO: clean up imports
-
-import tensorflow as tf
 import numpy as np
 import scipy.misc
-from mpl_toolkits.mplot3d import Axes3D
 
-from hand3d.nets.ColorHandPose3DNetwork import ColorHandPose3DNetwork
-from hand3d.utils.general import detect_keypoints, trafo_coords, plot_hand, plot_hand_3d
+import tensorflow as tf
+global graph, model
+graph = tf.get_default_graph()
 
-class Translator():
+def read_model():
+
 
     JSON_PATH = "./bin/model.json"
     WEIGHTS_PATH = "./bin/model.h5"
     CLASSES_PATH = "./bin/classes.pickle"
 
-    # network input
-    image_tf = tf.placeholder(tf.float32, shape=(1, 240, 320, 3))
-    hand_side_tf = tf.constant([[1.0, 0.0]])  # left hand (true for all samples provided)
-    evaluation = tf.placeholder_with_default(True, shape=())
 
-    # build network
-    net = ColorHandPose3DNetwork()
-    hand_scoremap_tf, image_crop_tf, scale_tf, center_tf,\
-    keypoints_scoremap_tf, keypoint_coord3d_tf = net.inference(image_tf, hand_side_tf, evaluation)
+    # load json and create model
+    json_file = open(JSON_PATH, 'r')
+    loaded_model_json = json_file.read()
+    json_file.close()
+    loaded_model = model_from_json(loaded_model_json)
+    # load weights into new model
+    loaded_model.load_weights(WEIGHTS_PATH)
 
-    # start tensorflow and initialize network
-    gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
-    sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
-    net.init(sess)
-    def compile(self, model):
-        model.compile(optimizer='adam',
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['accuracy'],)
+    loaded_model.compile(optimizer='adam',
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'],)
+    return loaded_model
 
-    def read_model(self):
-        # load json and create model
-        json_file = open(self.JSON_PATH, 'r')
-        loaded_model_json = json_file.read()
-        json_file.close()
-        loaded_model = model_from_json(loaded_model_json)
-        # load weights into new model
-        loaded_model.load_weights(self.WEIGHTS_PATH)
-        self.compile(loaded_model)
-        return loaded_model
+model = read_model()
+
+class Translator():
+
+    #TODO: clean up imports
+
+
+    JSON_PATH = "./bin/model.json"
+    WEIGHTS_PATH = "./bin/model.h5"
+    CLASSES_PATH = "./bin/classes.pickle"
+
+    image_tf = None
+    hand_side_tf = None
+    evaluation = None
+    net = None
+    hand_scoremap_tf = None
+    image_crop_tf = None
+    scale_tf = None
+    center_tf = None
+    keypoints_scoremap_tf = None
+    keypoint_coord3d_tf = None
+    sess = None
+
+    def __init__(self,consumer):
+
+        self.client = consumer
+
+        print('Initializing hand3d')
+        from hand3d.nets.ColorHandPose3DNetwork import ColorHandPose3DNetwork
+        from hand3d.utils.general import detect_keypoints, trafo_coords, plot_hand, plot_hand_3d
+
+        # network input
+        self.image_tf = tf.placeholder(tf.float32, shape=(1, 240, 320, 3))
+        self.hand_side_tf = tf.constant([[1.0, 0.0]])  # left hand (true for all samples provided)
+        self.evaluation = tf.placeholder_with_default(True, shape=())
+
+        # build network
+        self.net = ColorHandPose3DNetwork()
+        self.hand_scoremap_tf, self.image_crop_tf, self.scale_tf, self.center_tf,\
+        self.keypoints_scoremap_tf, self.keypoint_coord3d_tf = self.net.inference(self.image_tf, self.hand_side_tf, self.evaluation)
+
+        # start tensorflow and initialize network
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.8)
+        self.sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options))
+        self.net.init(self.sess)
 
     # TODO: bulk process frames?
     def image_to_hand(self, image):
@@ -70,16 +97,16 @@ class Translator():
         return pickle.load( open(self.CLASSES_PATH,"rb") )
 
     def predict(self, hand):
-        model = self.read_model()
-        return model.predict(hand)
+        ret = None
+        with graph.as_default():
+            ret = model.predict(hand)
+
+        return ret
 
 
     raw_data_cache = []
     asl_word_cache = []
     english_cache = []
-
-    def __init__(self,consumer):
-        self.client = consumer
 
     def process(self,video_frames):
         self.detect_asl_letter(video_frames)
