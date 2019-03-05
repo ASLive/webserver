@@ -105,12 +105,11 @@ class Translator():
         prediction = self.letter_predict(hand)[0]
         predicted_label = np.argmax(prediction)
         predicted_letter = classes[predicted_label]
-        confidence_threshold = 0.60;
-        prediction_confidence = prediction[predicted_label]
+        confidence_threshold = 0.75;
+        confidence = prediction[predicted_label]
         # TODO: stop sending if client disconnects
-        print(prediction)
-        print(predicted_letter)
-        if prediction_confidence > confidence_threshold:
+        print(str(confidence)+" : "+predicted_letter)
+        if confidence > confidence_threshold:
             self.client.send(text_data=json.dumps(
                 {'translation': predicted_letter}
             ))
