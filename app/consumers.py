@@ -10,6 +10,8 @@ import cv2
 from contextlib import closing
 import math
 
+TEST_MODE = False; # for use without mobile client
+
 # TODO: get frames without saving video file for speed
 def get_frames(video_file):
     frames = []
@@ -43,12 +45,14 @@ def get_frames(video_file):
 class AslConsumer(WebsocketConsumer):
 
     def connect(self):
+
         self.client_name = 'client_%s' % uuid.uuid4()
         self.translator = translate.Translator(self)
         async_to_sync(self.channel_layer.group_add)(self.client_name,self.channel_name)
         self.accept()
 
     def disconnect(self, close_code):
+        self.translator = None
         async_to_sync(self.channel_layer.group_discard)(self.client_name,self.channel_name)
 
     def receive(self, text_data):
@@ -58,20 +62,22 @@ class AslConsumer(WebsocketConsumer):
         # decode video data from base64
         # remove leading padding header (data:video/mp4;base64,)
         # TODO: find a safer way to strip header
-        decoded_string = base64.b64decode(text_data[22:])
+        if not TEST_MODE:
+            decoded_string = base64.b64decode(text_data[22:])
 
         # write video data to mp4 file
         video_file_path = 'test.mp4'
-        f = open(video_file_path,'wb')
-        f.write(decoded_string)
-        f.close()
+        if not TEST_MODE:
+            f = open(video_file_path,'wb')
+            f.write(decoded_string)
+            f.close()
 
         # get video frames
         video_frames = get_frames(video_file_path)
 
         # process frame with ML
-        # TODO: process every frame, or every i-th frame
-        video_frames = [video_frames[0]]
-        self.translator.process(video_frames)
+        frame_step = 15
+        for frame in video_frames[0::frame_step]:
+            self.translator.process(frame)
 
         print('processed request @ ' + str(datetime.now().time()))
