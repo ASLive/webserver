@@ -31,21 +31,9 @@ from .data import load_data
 TEST_MODE = False; # for use without mobile client
 
 # MNIST Dataset
-# (train_images, train_labels),(test_images, test_labels) = mnist.load_data(path='sign_mnist_train.csv')
 (train_images, train_labels),(test_images, test_labels), class_names = load_data()
 
 print(str(class_names))
-
-# d = {}
-#
-# for i in range(len(train_labels)):
-#     d[train_labels[i]] = train_images[i]
-#
-# for key in d.keys():
-#     plt.imshow(d[key])
-#
-# plt.show()
-# exit()
 
 train_images  = np.expand_dims(train_images.astype(np.float32) / 255.0, axis=3)
 test_images = np.expand_dims(test_images.astype(np.float32) / 255.0, axis=3)
@@ -134,55 +122,7 @@ train_op = optimizer.minimize(loss)
 test_predictions = tf.nn.softmax(conv_net(test_images, weights, biases))
 acc,acc_op = tf.metrics.accuracy(predictions=tf.argmax(test_predictions,1), labels=test_labels)
 
-# Run Session
-#with tf.Session() as sess:
-#    # Initialize Variables
-#    sess.run(tf.global_variables_initializer())
-#    sess.run(tf.local_variables_initializer())
-#    sess.run(iterator.initializer)
-#
-#    # Train the Model
-#    for epoch in range(n_epochs):
-#        prog_bar = tqdm(range(int(len(train_images)/batch_size)))
-#        for step in prog_bar:
-#            _,cost = sess.run([train_op,loss])
-#            prog_bar.set_description("cost: {:.3f}".format(cost))
-#        accuracy = sess.run(acc_op)
-#
-#        print('\nEpoch {} Accuracy: {:.3f}'.format(epoch+1, accuracy))
-#
-#    # Show Sample Predictions
-#    # predictions = sess.run(tf.argmax(conv_net(test_images[:25], weights, biases), axis=1))
-#    # f, axarr = plt.subplots(5, 5, figsize=(25,25))
-#    # for idx in range(25):
-#    #     axarr[int(idx/5), idx%5].imshow(np.squeeze(test_images[idx]), cmap='gray')
-#    #     axarr[int(idx/5), idx%5].set_title(str(predictions[idx]),fontsize=50)
-#    #
-#    # Save Model
-#    saver = tf.train.Saver()
-#    saver.save(sess, './model.ckpt')
-
 graph = tf.get_default_graph()
-# JSON_PATH = "./bin/model.json"
-# WEIGHTS_PATH = "./bin/model.h5"
-# CLASSES_PATH = "./bin/classes.pickle"
-
-# def read_model():
-#     # load json into new model
-#     json_file = open(JSON_PATH, 'r')
-#     loaded_model_json = json_file.read()
-#     json_file.close()
-#     loaded_model = model_from_json(loaded_model_json)
-#     # load weights into new model
-#     loaded_model.load_weights(WEIGHTS_PATH)
-#     # compile model
-#     loaded_model.compile(optimizer='adam',
-#                   loss='sparse_categorical_crossentropy',
-#                   metrics=['accuracy'],)
-#     return loaded_model
-#
-# model = read_model()
-# classes = pickle.load( open(CLASSES_PATH,"rb") )
 
 class Translator():
 
@@ -223,10 +163,12 @@ class Translator():
         # pre processing
 
         cv2.imwrite("imdir/raw_frame.jpg", image)
-        # y, x = image.shape
-        # image = image[0:int(y*0.6),0:x]
+        s = np.array(image).shape
+        y = s[0]
+        x = s[1]
+        image = image[0:int(y*0.6),0:x]
 
-        # cv2.imwrite("imdir/raw_crop.jpg", image)
+        cv2.imwrite("imdir/raw_crop.jpg", image)
         image_raw = scipy.misc.imresize(image, (240, 320))
         image_v = np.expand_dims((image_raw.astype('float') / 255.0) - 0.5, 0)
 
@@ -313,26 +255,6 @@ with graph.as_default():
 
 
 trans = Translator()
-# image = scipy.misc.imread('./carlsen.jpg')
-# hand = trans.image_to_hand(image)
-# trans.process(np.array(hand))
-#    a = np.array(test_images[0])
-#    print("good:")
-#    print(a.shape)
-#    print("bad:")
-#    print(b.shape)
-
-    # Show Sample Predictions
-    # predictions = sess.run(tf.argmax(conv_net(test_images[:25], weights, biases), axis=1))
-    # f, axarr = plt.subplots(5, 5, figsize=(25,25))
-    # for idx in range(25):
-    #     axarr[int(idx/5), idx%5].imshow(np.squeeze(test_images[idx]), cmap='gray')
-    #     axarr[int(idx/5), idx%5].set_title(str(predictions[idx]),fontsize=50)
-    #
-    # Save Model
-#    saver = tf.train.Saver()
-#    saver.save(sess, './model.ckpt')
-
 
 # TODO: get frames without saving video file for speed
 def get_frames(video_file):
