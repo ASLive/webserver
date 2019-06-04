@@ -26,18 +26,35 @@ from keras.datasets import mnist
 from keras.utils import to_categorical
 import matplotlib.pyplot as plt
 
+from .data import load_data
+
 TEST_MODE = False; # for use without mobile client
 
 # MNIST Dataset
-(train_images, train_labels),(test_images, test_labels) = mnist.load_data(path='sign_mnist_train.csv')
+# (train_images, train_labels),(test_images, test_labels) = mnist.load_data(path='sign_mnist_train.csv')
+(train_images, train_labels),(test_images, test_labels), class_names = load_data()
+
+print(str(class_names))
+
+# d = {}
+#
+# for i in range(len(train_labels)):
+#     d[train_labels[i]] = train_images[i]
+#
+# for key in d.keys():
+#     plt.imshow(d[key])
+#
+# plt.show()
+# exit()
+
 train_images  = np.expand_dims(train_images.astype(np.float32) / 255.0, axis=3)
 test_images = np.expand_dims(test_images.astype(np.float32) / 255.0, axis=3)
 train_labels = to_categorical(train_labels)
 
 # Training parameters
 batch_size = 128
-n_epochs = 5
-n_classes = 10
+n_epochs = 25
+n_classes = 26
 learning_rate = 1e-4
 
 # 2D Convolutional Function
@@ -204,6 +221,12 @@ class Translator():
     def image_to_hand(self, image):
         """convert an image frame into hand vector with hand3d"""
         # pre processing
+
+        cv2.imwrite("imdir/raw_frame.jpg", image)
+        # y, x = image.shape
+        # image = image[0:int(y*0.6),0:x]
+
+        # cv2.imwrite("imdir/raw_crop.jpg", image)
         image_raw = scipy.misc.imresize(image, (240, 320))
         image_v = np.expand_dims((image_raw.astype('float') / 255.0) - 0.5, 0)
 
@@ -224,8 +247,10 @@ class Translator():
         # hand_vector = np.expand_dims(keypoint_coord3d_v,0)
         image_crop_v = np.squeeze(image_crop_v)
         image_crop_v = ((image_crop_v + 0.5) * 255).astype('uint8')
+        cv2.imwrite("imdir/cropped.jpg", image_crop_v)
         image = scipy.misc.imresize(image_crop_v, (28, 28))
         image = rgb2gray(image)
+        cv2.imwrite("imdir/grayscale_cropped.jpg", image)
         image = np.expand_dims((image.astype('float') / 255.0) - 0.5, 3)
 
         return image
@@ -251,7 +276,10 @@ class Translator():
 #        self.client.send(text_data=json.dumps(
 #            {'translation': str(predictions)}
 #        ))
-        print(str(predictions))
+        print('class: ' + str(predictions[0]))
+        print('predicted letter: ' + str(class_names[predictions[0]]))
+        print('\n')
+        return class_names[predictions[0]]
         # predicted_label = np.argmax(prediction)
         # predicted_letter = classes[predicted_label]
         # confidence_threshold = 0.75;
@@ -259,9 +287,9 @@ class Translator():
         # # TODO: stop sending if client disconnects
         # print(str(confidence)+" : "+predicted_letter)
         # if confidence > confidence_threshold:
-        #     self.client.send(text_data=json.dumps(
-        #         {'translation': predicted_letter}
-        #     ))
+            # self.client.send(text_data=json.dumps(
+            #     {'translation': predicted_letter}
+            # ))
 
 
 with graph.as_default():
@@ -371,9 +399,15 @@ class AslConsumer(WebsocketConsumer):
 
         # process frame with ML
         frame_step = 15
+        counter = 0
         for frame in video_frames[0::frame_step]:
+            print('\nprocessing frame number ' + str(counter))
             # self.translator.process(frame)
             hand = trans.image_to_hand(frame)
-            trans.process(np.array(hand))
+            ret = trans.process(np.array(hand))
+            self.send(text_data=json.dumps(
+                {'translation': ret}
+            ))
+            counter += 15
 
         print('processed request @ ' + str(datetime.now().time()))
