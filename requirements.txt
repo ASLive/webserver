@@ -42,5 +42,5 @@ tensorflow-estimator==1.13.0rc0
 termcolor==1.1.0
 Twisted==18.9.0
 txaio==18.8.1
-Werkzeug==0.14.1
+Werkzeug==0.15.3
 zope.interface==4.6.0
