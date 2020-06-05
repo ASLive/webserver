@@ -11,7 +11,7 @@ channels-redis==2.3.3
 constantly==15.1.0
 cycler==0.10.0
 daphne==2.2.5
-Django==2.1.7
+Django==2.2.13
 gast==0.2.2
 grpcio==1.18.0
 h5py==2.9.0
